@@ -86,10 +86,13 @@ header{display:flex;align-items:flex-start;justify-content:space-between;gap:12p
 .add-row input:focus{outline:none}
 .add-row input::placeholder{color:var(--ink-faint)}
 .add-row button{
-  border:none;background:transparent;color:var(--accent);font-weight:600;font-size:0.88rem;
-  cursor:pointer;padding:4px 6px;flex:none;
+  border:none;background:var(--accent);color:#fff;cursor:pointer;flex:none;
+  width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  transition:filter .15s ease,transform .1s ease;
 }
-.add-row button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.add-row button:hover{filter:brightness(1.1)}
+.add-row button:active{transform:scale(.92)}
+.add-row button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* todo rows */
 .todo{position:relative}
@@ -257,7 +260,7 @@ header{display:flex;align-items:flex-start;justify-content:space-between;gap:12p
 <div class="wrap">
   <header>
     <div class="title-block">
-      <h1>To-do with KR</h1>
+      <h1>Tasks with OKR</h1>
       <div class="date" id="today"></div>
     </div>
     <div class="header-right">
@@ -292,7 +295,9 @@ header{display:flex;align-items:flex-start;justify-content:space-between;gap:12p
     <div class="add-row">
       <span class="plus-glyph">+</span>
       <input type="text" id="newTodo" placeholder="New to-do…" autocomplete="off">
-      <button id="addBtn">Add</button>
+      <button id="addBtn" aria-label="Add to-do" title="Add to-do">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
     </div>
     <div id="list"></div>
   </div>
