@@ -138,14 +138,14 @@ header{display:flex;align-items:flex-start;justify-content:space-between;gap:12p
 .filter-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* due date row inside the expanded panel */
-.due-row{display:flex;align-items:center;gap:9px;padding:10px 2px 12px;border-bottom:1px solid var(--line)}
+.due-row{display:flex;align-items:center;gap:9px;padding:12px 2px 2px;border-top:1px solid var(--line);margin-top:10px}
 .due-icon{flex:none;color:var(--ink-soft)}
 .due-label-text{font-size:0.78rem;color:var(--ink-soft);font-weight:600;flex:none}
 .due-input{border:none;background:transparent;font-family:var(--sans);font-size:0.85rem;color:var(--ink);flex:1;min-width:0}
 .due-input:focus{outline:none}
 .due-clear{background:none;border:none;cursor:pointer;color:var(--ink-faint);font-size:0.95rem;padding:2px 4px;border-radius:5px;flex:none}
 .due-clear:hover{color:var(--danger)}
-.krs-label{font-size:0.66rem;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin:12px 2px 6px}
+.krs-label{font-size:0.66rem;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin:2px 2px 6px}
 .todo.done .todo-pct{color:var(--ink-faint)}
 .chevron{
   background:none;border:none;cursor:pointer;padding:5px;flex:none;color:var(--ink-faint);
@@ -257,7 +257,7 @@ header{display:flex;align-items:flex-start;justify-content:space-between;gap:12p
 <div class="wrap">
   <header>
     <div class="title-block">
-      <h1>Tasks with OKR</h1>
+      <h1>To-do with KR</h1>
       <div class="date" id="today"></div>
     </div>
     <div class="header-right">
@@ -534,15 +534,15 @@ function render(){
           <button class="del-btn" title="Delete to-do" aria-label="Delete to-do">×</button>
         </div>
         <div class="krs">
+          <div class="krs-label">Key Results</div>
+          ${krsHtml}
+          <button class="add-kr">+ Add key result</button>
           <div class="due-row">
             <svg class="due-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span class="due-label-text">Due date</span>
             <input type="date" class="due-input" value="${t.due || ''}" aria-label="Due date">
             ${t.due ? '<button class="due-clear" title="Clear due date" aria-label="Clear due date">×</button>' : ''}
           </div>
-          <div class="krs-label">Key Results</div>
-          ${krsHtml}
-          <button class="add-kr">+ Add key result</button>
         </div>
       </div>`;
     }).join('');
