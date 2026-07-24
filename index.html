@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traction — Todos with Key Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFAF7;
+  --ink:#1C2128;
+  --ink-soft:#5A6270;
+  --line:#E3E4DF;
+  --accent:#155E68;      /* deep teal ink */
+  --accent-soft:#155E6814;
+  --accent-fill:#155E680E;
+  --done:#9AA1AC;
+  --danger:#A33C2E;
+  --card:#FFFFFF;
+  --radius:10px;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'Archivo',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  line-height:1.5;
+  min-height:100vh;
+}
+.wrap{max-width:640px;margin:0 auto;padding:32px 20px 80px}
+
+/* header */
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+h1{font-size:1.35rem;font-weight:700;font-stretch:110%;letter-spacing:-0.01em}
+.header-right{display:flex;align-items:center;gap:10px}
+.sync-pill{
+  font-family:var(--mono);font-size:0.68rem;padding:3px 9px;border-radius:99px;
+  border:1px solid var(--line);color:var(--ink-soft);background:var(--card);
+  white-space:nowrap;
+}
+.sync-pill.ok{color:var(--accent);border-color:var(--accent-soft);background:var(--accent-soft)}
+.sync-pill.err{color:var(--danger);border-color:#A33C2E22;background:#A33C2E0D}
+.icon-btn{
+  background:none;border:none;cursor:pointer;color:var(--ink-soft);
+  padding:6px;border-radius:8px;display:flex;align-items:center;
+}
+.icon-btn:hover{background:var(--accent-soft);color:var(--accent)}
+.subtitle{font-size:0.8rem;color:var(--ink-soft);margin-bottom:28px}
+.subtitle .day{font-family:var(--mono)}
+
+/* overall bar */
+.overall{margin-bottom:26px}
+.overall-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.overall-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);font-weight:600}
+.overall-pct{font-family:var(--mono);font-size:0.85rem;color:var(--accent);font-weight:500}
+.overall-track{height:4px;background:var(--line);border-radius:99px;overflow:hidden}
+.overall-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease}
+
+/* add bar */
+.add-bar{display:flex;gap:8px;margin-bottom:22px}
+.add-bar input{
+  flex:1;padding:11px 14px;font-size:0.95rem;font-family:var(--sans);
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--card);color:var(--ink);
+}
+.add-bar input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.add-bar button{
+  padding:11px 18px;font-size:0.9rem;font-weight:600;font-family:var(--sans);
+  background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;
+}
+.add-bar button:hover{filter:brightness(1.12)}
+.add-bar button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* todo card */
+.todo{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  margin-bottom:10px;overflow:hidden;position:relative;
+}
+.todo-row{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;position:relative;z-index:1;
+}
+.todo-progress-bg{
+  position:absolute;inset:0;background:var(--accent-fill);
+  transform-origin:left;transition:width .35s ease;z-index:0;pointer-events:none;
+}
+.todo-check{
+  appearance:none;width:19px;height:19px;flex:none;border:1.5px solid var(--ink-soft);
+  border-radius:6px;cursor:pointer;position:relative;background:var(--card);
+}
+.todo-check:checked{background:var(--accent);border-color:var(--accent)}
+.todo-check:checked::after{
+  content:'';position:absolute;left:5.5px;top:2px;width:4px;height:9px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+.todo-check:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.todo-title{flex:1;font-size:0.95rem;min-width:0;word-wrap:break-word}
+.todo.done .todo-title{color:var(--done);text-decoration:line-through}
+.todo-pct{font-family:var(--mono);font-size:0.78rem;color:var(--accent);flex:none;min-width:38px;text-align:right}
+.todo.done .todo-pct{color:var(--done)}
+.chevron{
+  background:none;border:none;cursor:pointer;padding:4px;flex:none;color:var(--ink-soft);
+  border-radius:6px;display:flex;transition:transform .2s ease;
+}
+.chevron:hover{background:var(--accent-soft);color:var(--accent)}
+.chevron:focus-visible{outline:2px solid var(--accent)}
+.todo.open .chevron{transform:rotate(90deg)}
+.del-btn{
+  background:none;border:none;cursor:pointer;padding:4px;flex:none;color:var(--line);
+  border-radius:6px;display:flex;font-size:1rem;line-height:1;
+}
+.todo:hover .del-btn{color:var(--ink-soft)}
+.del-btn:hover{color:var(--danger)!important;background:#A33C2E0D}
+.del-btn:focus-visible{outline:2px solid var(--danger)}
+
+/* key results section */
+.krs{display:none;border-top:1px solid var(--line);padding:6px 14px 12px 43px;position:relative;z-index:1;background:var(--card)}
+.todo.open .krs{display:block}
+.kr{display:flex;align-items:center;gap:10px;padding:7px 0}
+.kr + .kr{border-top:1px dashed var(--line)}
+.kr-name{
+  flex:1;min-width:0;border:none;background:transparent;font-family:var(--sans);
+  font-size:0.87rem;color:var(--ink);padding:3px 4px;border-radius:5px;
+}
+.kr-name:focus{outline:1.5px solid var(--accent);background:var(--paper)}
+.kr-slider{flex:none;width:110px;accent-color:var(--accent);cursor:pointer}
+.kr-slider:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kr-pct{font-family:var(--mono);font-size:0.75rem;color:var(--ink-soft);flex:none;min-width:36px;text-align:right}
+.kr-del{
+  background:none;border:none;cursor:pointer;color:var(--line);padding:2px 4px;
+  border-radius:5px;font-size:0.95rem;line-height:1;flex:none;
+}
+.kr:hover .kr-del{color:var(--ink-soft)}
+.kr-del:hover{color:var(--danger)!important}
+.add-kr{
+  margin-top:8px;background:none;border:1px dashed var(--line);color:var(--ink-soft);
+  font-family:var(--sans);font-size:0.8rem;padding:6px 12px;border-radius:8px;cursor:pointer;
+}
+.add-kr:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-fill)}
+.add-kr:focus-visible{outline:2px solid var(--accent)}
+.kr-empty{font-size:0.8rem;color:var(--ink-soft);padding:8px 0 2px;font-style:italic}
+
+.empty-state{
+  text-align:center;color:var(--ink-soft);font-size:0.9rem;padding:48px 20px;
+  border:1px dashed var(--line);border-radius:var(--radius);
+}
+
+/* settings modal */
+.modal-bg{
+  display:none;position:fixed;inset:0;background:#1C212866;z-index:50;
+  align-items:flex-start;justify-content:center;padding:9vh 20px;
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--card);border-radius:14px;max-width:440px;width:100%;
+  padding:24px;border:1px solid var(--line);max-height:82vh;overflow-y:auto;
+}
+.modal h2{font-size:1.05rem;margin-bottom:4px;font-weight:700}
+.modal .hint{font-size:0.78rem;color:var(--ink-soft);margin-bottom:16px}
+.modal label{display:block;font-size:0.75rem;font-weight:600;color:var(--ink-soft);margin:12px 0 4px;text-transform:uppercase;letter-spacing:0.05em}
+.modal input{
+  width:100%;padding:9px 12px;font-size:0.88rem;font-family:var(--mono);
+  border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);
+}
+.modal input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.modal-actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.btn{
+  padding:9px 16px;font-size:0.85rem;font-weight:600;border-radius:8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:var(--sans);
+}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn.subtle:hover{background:var(--paper)}
+.btn.danger{color:var(--danger);border-color:#A33C2E33}
+.btn.danger:hover{background:#A33C2E0D}
+.modal .status-msg{font-size:0.8rem;margin-top:12px;font-family:var(--mono)}
+.modal .status-msg.ok{color:var(--accent)}
+.modal .status-msg.err{color:var(--danger)}
+.divider{border:none;border-top:1px solid var(--line);margin:20px 0}
+.mode-note{
+  font-size:0.78rem;color:var(--ink-soft);background:var(--paper);
+  border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:4px;
+}
+.mode-note b{color:var(--ink)}
+
+@media (max-width:480px){
+  .kr-slider{width:80px}
+  .krs{padding-left:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Traction</h1>
+    <div class="header-right">
+      <span class="sync-pill" id="syncPill">local only</span>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+  <p class="subtitle">Todos with key results · <span class="day" id="today"></span></p>
+
+  <div class="overall" id="overallWrap" hidden>
+    <div class="overall-top">
+      <span class="overall-label">Overall progress</span>
+      <span class="overall-pct" id="overallPct">0%</span>
+    </div>
+    <div class="overall-track"><div class="overall-fill" id="overallFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="add-bar">
+    <input type="text" id="newTodo" placeholder="Add a todo…" autocomplete="off">
+    <button id="addBtn">Add</button>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<!-- settings modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-label="Settings">
+    <h2>GitHub sync</h2>
+    <p class="hint">Connect a private repo so your data follows you between your Mac and office PC. Leave blank to keep everything in this browser only.</p>
+    <div class="mode-note" id="modeNote"></div>
+    <label for="ghUser">GitHub username</label>
+    <input type="text" id="ghUser" placeholder="yourusername" autocomplete="off">
+    <label for="ghRepo">Data repo name (private)</label>
+    <input type="text" id="ghRepo" placeholder="okr-data" autocomplete="off">
+    <label for="ghPath">File path in repo</label>
+    <input type="text" id="ghPath" placeholder="data.json" autocomplete="off">
+    <label for="ghToken">Fine-grained token</label>
+    <input type="password" id="ghToken" placeholder="github_pat_…" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn primary" id="connectBtn">Save &amp; connect</button>
+      <button class="btn subtle" id="closeModal">Close</button>
+      <button class="btn danger" id="disconnectBtn">Disconnect</button>
+    </div>
+    <p class="status-msg" id="connStatus"></p>
+    <hr class="divider">
+    <div class="modal-actions" style="margin-top:0">
+      <button class="btn subtle" id="exportBtn">Export JSON</button>
+      <button class="btn subtle" id="importBtn">Import JSON</button>
+      <input type="file" id="importFile" accept=".json" hidden>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ---------- state ---------- */
+let data = { todos: [] };          // synced data
+let sha = null;                     // github file sha
+let cfg = null;                     // {user, repo, path, token}
+let openIds = new Set();            // which todos are expanded (UI only, not synced)
+let saveTimer = null;
+let saving = false;
+let dirtyWhileSaving = false;
+
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* ---------- config (per-browser, in localStorage) ---------- */
+function loadCfg(){
+  try { cfg = JSON.parse(localStorage.getItem('traction_cfg')) || null; } catch(e){ cfg = null; }
+}
+function saveCfg(){
+  if (cfg) localStorage.setItem('traction_cfg', JSON.stringify(cfg));
+  else localStorage.removeItem('traction_cfg');
+}
+
+/* ---------- local fallback storage ---------- */
+function loadLocal(){
+  try { data = JSON.parse(localStorage.getItem('traction_data')) || { todos: [] }; }
+  catch(e){ data = { todos: [] }; }
+}
+function saveLocal(){
+  localStorage.setItem('traction_data', JSON.stringify(data));
+}
+
+/* ---------- base64 helpers (UTF-8 safe) ---------- */
+function b64encode(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+function b64decode(b64){
+  const bin = atob(b64.replace(/\n/g, ''));
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+/* ---------- github api ---------- */
+function apiUrl(){
+  return `https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${cfg.path}`;
+}
+function headers(){
+  return {
+    'Authorization': 'Bearer ' + cfg.token,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+}
+
+async function ghLoad(){
+  const res = await fetch(apiUrl(), { headers: headers() });
+  if (res.status === 404) throw new Error('File not found. Check repo name and path, and that data.json exists.');
+  if (res.status === 401) throw new Error('Token rejected. Check the token value and expiry.');
+  if (res.status === 403) throw new Error('Access denied. Check the token has Contents read/write on this repo.');
+  if (!res.ok) throw new Error('GitHub error ' + res.status);
+  const j = await res.json();
+  sha = j.sha;
+  const parsed = JSON.parse(b64decode(j.content));
+  data = (parsed && Array.isArray(parsed.todos)) ? parsed : { todos: [] };
+}
+
+async function ghSave(){
+  const body = {
+    message: 'update ' + new Date().toISOString(),
+    content: b64encode(JSON.stringify(data, null, 2)),
+    sha: sha
+  };
+  let res = await fetch(apiUrl(), { method: 'PUT', headers: headers(), body: JSON.stringify(body) });
+  if (res.status === 409 || res.status === 422){
+    // stale sha: refetch sha, then retry once (last write wins; fine for a single user)
+    const fresh = await fetch(apiUrl(), { headers: headers() });
+    if (fresh.ok){
+      const j = await fresh.json();
+      body.sha = j.sha;
+      res = await fetch(apiUrl(), { method: 'PUT', headers: headers(), body: JSON.stringify(body) });
+    }
+  }
+  if (!res.ok) throw new Error('Save failed (' + res.status + ')');
+  const j = await res.json();
+  sha = j.content.sha;
+}
+
+/* ---------- save orchestration ---------- */
+function markDirty(){
+  saveLocal(); // always keep a local copy too, as an offline cache
+  render();
+  if (!cfg){ setPill('local only', ''); return; }
+  if (saveTimer) clearTimeout(saveTimer);
+  setPill('unsaved…', '');
+  saveTimer = setTimeout(doSave, 1200);
+}
+
+async function doSave(){
+  if (!cfg) return;
+  if (saving){ dirtyWhileSaving = true; return; }
+  saving = true;
+  setPill('saving…', '');
+  try {
+    await ghSave();
+    setPill('synced', 'ok');
+  } catch(e){
+    setPill('sync error', 'err');
+    console.error(e);
+  }
+  saving = false;
+  if (dirtyWhileSaving){ dirtyWhileSaving = false; doSave(); }
+}
+
+function setPill(text, cls){
+  const p = $('syncPill');
+  p.textContent = text;
+  p.className = 'sync-pill' + (cls ? ' ' + cls : '');
+}
+
+/* ---------- progress math ---------- */
+function todoPct(t){
+  if (t.done) return 100;
+  if (!t.krs || t.krs.length === 0) return null;
+  const sum = t.krs.reduce((a, k) => a + (Number(k.pct) || 0), 0);
+  return Math.round(sum / t.krs.length);
+}
+function overallPct(){
+  const vals = data.todos.map(t => {
+    const p = todoPct(t);
+    return p === null ? (t.done ? 100 : 0) : p;
+  });
+  if (vals.length === 0) return null;
+  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+}
+
+/* ---------- render ---------- */
+function render(){
+  const list = $('list');
+  if (data.todos.length === 0){
+    list.innerHTML = '<div class="empty-state">Nothing yet. Add a todo above, then open its toggle to add key results.</div>';
+  } else {
+    list.innerHTML = data.todos.map(t => {
+      const pct = todoPct(t);
+      const isOpen = openIds.has(t.id);
+      const krsHtml = (t.krs && t.krs.length)
+        ? t.krs.map(k => `
+          <div class="kr" data-todo="${t.id}" data-kr="${k.id}">
+            <input class="kr-name" value="${esc(k.name)}" placeholder="Key result…" aria-label="Key result name">
+            <input class="kr-slider" type="range" min="0" max="100" step="5" value="${Number(k.pct)||0}" aria-label="Progress for ${esc(k.name)}">
+            <span class="kr-pct">${Number(k.pct)||0}%</span>
+            <button class="kr-del" title="Delete key result" aria-label="Delete key result">×</button>
+          </div>`).join('')
+        : '<div class="kr-empty">No key results yet.</div>';
+      return `
+      <div class="todo ${t.done ? 'done' : ''} ${isOpen ? 'open' : ''}" data-id="${t.id}">
+        <div class="todo-row">
+          <div class="todo-progress-bg" style="width:${pct === null ? 0 : pct}%"></div>
+          <input type="checkbox" class="todo-check" ${t.done ? 'checked' : ''} aria-label="Mark done">
+          <span class="todo-title">${esc(t.title)}</span>
+          <span class="todo-pct">${pct === null ? '' : pct + '%'}</span>
+          <button class="chevron" aria-label="Toggle key results" aria-expanded="${isOpen}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+          <button class="del-btn" title="Delete todo" aria-label="Delete todo">×</button>
+        </div>
+        <div class="krs">
+          ${krsHtml}
+          <button class="add-kr">+ Add key result</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const op = overallPct();
+  $('overallWrap').hidden = (op === null);
+  if (op !== null){
+    $('overallPct').textContent = op + '%';
+    $('overallFill').style.width = op + '%';
+  }
+}
+
+/* ---------- event delegation ---------- */
+$('list').addEventListener('click', e => {
+  const todoEl = e.target.closest('.todo');
+  if (!todoEl) return;
+  const t = data.todos.find(x => x.id === todoEl.dataset.id);
+  if (!t) return;
+
+  if (e.target.closest('.chevron')){
+    openIds.has(t.id) ? openIds.delete(t.id) : openIds.add(t.id);
+    render();
+  } else if (e.target.closest('.del-btn')){
+    if (confirm('Delete this todo and its key results?')){
+      data.todos = data.todos.filter(x => x.id !== t.id);
+      openIds.delete(t.id);
+      markDirty();
+    }
+  } else if (e.target.closest('.add-kr')){
+    t.krs = t.krs || [];
+    t.krs.push({ id: uid(), name: '', pct: 0 });
+    openIds.add(t.id);
+    markDirty();
+    // focus the new KR name field
+    const els = document.querySelectorAll(`.todo[data-id="${t.id}"] .kr-name`);
+    if (els.length) els[els.length - 1].focus();
+  } else if (e.target.closest('.kr-del')){
+    const krEl = e.target.closest('.kr');
+    t.krs = t.krs.filter(k => k.id !== krEl.dataset.kr);
+    markDirty();
+  }
+});
+
+$('list').addEventListener('change', e => {
+  const todoEl = e.target.closest('.todo');
+  if (!todoEl) return;
+  const t = data.todos.find(x => x.id === todoEl.dataset.id);
+  if (!t) return;
+
+  if (e.target.classList.contains('todo-check')){
+    t.done = e.target.checked;
+    markDirty();
+  } else if (e.target.classList.contains('kr-name')){
+    const krEl = e.target.closest('.kr');
+    const k = t.krs.find(x => x.id === krEl.dataset.kr);
+    if (k){ k.name = e.target.value.trim(); markDirty(); }
+  }
+});
+
+$('list').addEventListener('input', e => {
+  if (!e.target.classList.contains('kr-slider')) return;
+  const todoEl = e.target.closest('.todo');
+  const krEl = e.target.closest('.kr');
+  const t = data.todos.find(x => x.id === todoEl.dataset.id);
+  const k = t && t.krs.find(x => x.id === krEl.dataset.kr);
+  if (!k) return;
+  k.pct = Number(e.target.value);
+  // live-update numbers without a full re-render (keeps the slider drag smooth)
+  krEl.querySelector('.kr-pct').textContent = k.pct + '%';
+  const pct = todoPct(t);
+  todoEl.querySelector('.todo-pct').textContent = pct === null ? '' : pct + '%';
+  todoEl.querySelector('.todo-progress-bg').style.width = (pct === null ? 0 : pct) + '%';
+  const op = overallPct();
+  if (op !== null){ $('overallPct').textContent = op + '%'; $('overallFill').style.width = op + '%'; }
+  saveLocal();
+  if (cfg){ if (saveTimer) clearTimeout(saveTimer); setPill('unsaved…',''); saveTimer = setTimeout(doSave, 1200); }
+});
+
+/* ---------- add todo ---------- */
+function addTodo(){
+  const inp = $('newTodo');
+  const title = inp.value.trim();
+  if (!title) return;
+  data.todos.unshift({ id: uid(), title: title, done: false, krs: [] });
+  inp.value = '';
+  markDirty();
+  inp.focus();
+}
+$('addBtn').addEventListener('click', addTodo);
+$('newTodo').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
+/* ---------- settings modal ---------- */
+function openModal(){
+  $('modeNote').innerHTML = cfg
+    ? `Currently syncing to <b>${esc(cfg.user)}/${esc(cfg.repo)}</b>.`
+    : `Currently in <b>local-only mode</b>: data stays in this browser.`;
+  if (cfg){
+    $('ghUser').value = cfg.user; $('ghRepo').value = cfg.repo;
+    $('ghPath').value = cfg.path; $('ghToken').value = cfg.token;
+  } else {
+    $('ghPath').value = $('ghPath').value || 'data.json';
+  }
+  $('connStatus').textContent = '';
+  $('modalBg').classList.add('show');
+}
+$('settingsBtn').addEventListener('click', openModal);
+$('closeModal').addEventListener('click', () => $('modalBg').classList.remove('show'));
+$('modalBg').addEventListener('click', e => { if (e.target === $('modalBg')) $('modalBg').classList.remove('show'); });
+
+$('connectBtn').addEventListener('click', async () => {
+  const user = $('ghUser').value.trim();
+  const repo = $('ghRepo').value.trim();
+  const path = $('ghPath').value.trim() || 'data.json';
+  const token = $('ghToken').value.trim();
+  const st = $('connStatus');
+  if (!user || !repo || !token){
+    st.textContent = 'Fill in username, repo and token.'; st.className = 'status-msg err'; return;
+  }
+  cfg = { user, repo, path, token };
+  st.textContent = 'Connecting…'; st.className = 'status-msg';
+  try {
+    const hadLocalData = data.todos.length > 0;
+    const localSnapshot = JSON.parse(JSON.stringify(data));
+    await ghLoad();
+    // if remote is empty but this browser has data, offer to push local data up
+    if (data.todos.length === 0 && hadLocalData){
+      if (confirm('The repo file is empty but this browser has existing todos. Upload them to GitHub?')){
+        data = localSnapshot;
+        await ghSave();
+      }
+    }
+    saveCfg();
+    saveLocal();
+    render();
+    setPill('synced', 'ok');
+    st.textContent = 'Connected. Data loaded from GitHub.'; st.className = 'status-msg ok';
+  } catch(err){
+    cfg = null;
+    st.textContent = err.message; st.className = 'status-msg err';
+    setPill('local only', '');
+  }
+});
+
+$('disconnectBtn').addEventListener('click', () => {
+  cfg = null;
+  saveCfg();
+  setPill('local only', '');
+  $('ghToken').value = '';
+  $('modeNote').innerHTML = 'Currently in <b>local-only mode</b>: data stays in this browser.';
+  $('connStatus').textContent = 'Disconnected. Your data stays in this browser.';
+  $('connStatus').className = 'status-msg';
+});
+
+/* ---------- export / import ---------- */
+$('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'traction-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$('importBtn').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const parsed = JSON.parse(r.result);
+      if (!parsed || !Array.isArray(parsed.todos)) throw new Error();
+      if (confirm('Replace current data with the imported file?')){
+        data = parsed;
+        markDirty();
+        $('connStatus').textContent = 'Imported.'; $('connStatus').className = 'status-msg ok';
+      }
+    } catch(err){
+      $('connStatus').textContent = 'Not a valid backup file.'; $('connStatus').className = 'status-msg err';
+    }
+    e.target.value = '';
+  };
+  r.readAsText(f);
+});
+
+/* ---------- refresh remote data when returning to the tab ---------- */
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && cfg && !saving && !saveTimer){
+    try { await ghLoad(); saveLocal(); render(); setPill('synced','ok'); } catch(e){}
+  }
+});
+
+/* ---------- init ---------- */
+(async function init(){
+  $('today').textContent = new Date().toLocaleDateString('en-MY', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  loadCfg();
+  loadLocal();   // instant paint from cache
+  render();
+  if (cfg){
+    setPill('loading…', '');
+    try {
+      await ghLoad();
+      saveLocal();
+      render();
+      setPill('synced', 'ok');
+    } catch(e){
+      setPill('sync error', 'err');
+      console.error(e);
+    }
+  }
+})();
+</script>
+</body>
+</html>
